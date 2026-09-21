@@ -47,12 +47,12 @@ const KIND_CLYDE = 'clyde';     // Roam when far, flee when close – evasive be
 
 ## Acceptance criteria
 
-- [ ] All 4 ghosts spawn in the pen area at distinct coordinates
-- [ ] Each ghost has a unique AI behavior (see kinds above)
-- [ ] Ghosts follow Pac-Man from different paths (not identical)
-- [ ] Collision detection works (lives decrease when ghost catches Pac-Man)
-- [ ] Game remains playable (no infinite loops, proper wrapping)
-- [ ] Colors distinguish each ghost visually
+- [x] Step One: All 4 ghosts spawn in the pen area at distinct coordinates
+- [x] Step Two: Each ghost has a unique AI behavior (see kinds above)
+- [ ] Step Three: Ghosts follow Pac-Man from different paths (not identical)
+- [ ] Step Four: Collision detection works (lives decrease when ghost catches Pac-Man)
+- [ ] Step Five: Game remains playable (no infinite loops, proper wrapping)
+- [x] Step Six: Colors distinguish each ghost visually
 
 ## Decisions taken and discarded
 

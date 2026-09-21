@@ -1,4 +1,7 @@
-# Pac-Man-style game
+<div align="center">
+  <h1>Open PacMan Game</h1>
+  <img src="src/assets/images/pacman.webp" width="200" />
+</div>
 
 We are going to create a Pac-Man game similar to the original, but with a more modern and simple graphical interface.
 

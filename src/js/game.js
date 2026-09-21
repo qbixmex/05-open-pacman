@@ -110,6 +110,73 @@ function movePacman( game ) {
   wrapTunnel( p, width );
 }
 
+// The point a ghost aims at, depending on its kind.
+//   blinky: Pac-Man's current position (direct pursuit)
+//   pinky:  4 cells ahead of Pac-Man (anticipatory pursuit)
+//   inkey:  midpoint between Pac-Man and Blinky (dual-target pursuit)
+//   clyde:  Pac-Man's position (only used when far; near Pac-Man it flees)
+function ghostTarget( game, g ) {
+  const p = game.pacman;
+  const px = Math.round( p.x );
+  const py = Math.round( p.y );
+
+  if ( g.kind === 'blinky' ) return { x: px, y: py };
+
+  if ( g.kind === 'pinky' ) {
+    const d = DIRS[ p.dir ];
+    return { x: px + d.x * 4, y: py + d.y * 4 };
+  }
+
+  if ( g.kind === 'inkey' ) {
+    const blinky = game.ghosts.find( ( o ) => o.kind === 'blinky' );
+    const bx = blinky ? Math.round( blinky.x ) : px;
+    const by = blinky ? Math.round( blinky.y ) : py;
+    return { x: ( px + bx ) / 2, y: ( py + by ) / 2 };
+  }
+
+  return { x: px, y: py };
+}
+
+// Direction among `choices` whose next cell is nearest to (tx, ty).
+function nearestChoice( g, choices, tx, ty ) {
+  let best = choices[ 0 ];
+  let bestDist = Infinity;
+  for ( const dir of choices ) {
+    const d = DIRS[ dir ];
+    const dist = Math.abs( g.x + d.x - tx ) + Math.abs( g.y + d.y - ty );
+    if ( dist < bestDist ) {
+      bestDist = dist;
+      best = dir;
+    }
+  }
+  return best;
+}
+
+// Direction among `choices` whose next cell is farthest from Pac-Man.
+function farthestChoice( g, choices, px, py ) {
+  let best = choices[ 0 ];
+  let bestDist = -Infinity;
+  for ( const dir of choices ) {
+    const d = DIRS[ dir ];
+    const dist = Math.abs( g.x + d.x - px ) + Math.abs( g.y + d.y - py );
+    if ( dist > bestDist ) {
+      bestDist = dist;
+      best = dir;
+    }
+  }
+  return best;
+}
+
+// Is the ghost still inside the pen (interior cells or the door row)?
+// The test must exclude the tunnel row (row 14) segments outside the pen,
+// so it checks a box (rows 12-15, cols 11-16) rather than just the y value.
+function ghostInPen( g ) {
+  const x = Math.round( g.x );
+  const y = Math.round( g.y );
+  if ( y === 12 ) return x === 13 || x === 14; // door cells
+  return y >= 13 && y <= 15 && x >= 11 && x <= 16;
+}
+
 function decideGhost( game, g ) {
   const grid = game.grid;
   const p = game.pacman;
@@ -120,25 +187,47 @@ function decideGhost( game, g ) {
   // Dead end: allow the 180-degree turn.
   const choices = options.length ? options : [ '' + OPPOSITE[ g.dir ] ];
 
-  if ( g.kind === 'hunter' ) {
-    const px = Math.round( p.x );
-    const py = Math.round( p.y );
-    let best = choices[ 0 ];
-    let bestDist = Infinity;
-    for ( const dir of choices ) {
-      const d = DIRS[ dir ];
-      const nx = g.x + d.x;
-      const ny = g.y + d.y;
-      const dist = Math.abs( nx - px ) + Math.abs( ny - py );
-      if ( dist < bestDist ) {
-        bestDist = dist;
-        best = dir;
-      }
-    }
-    g.dir = best;
-  } else {
-    g.dir = choices[ Math.floor( Math.random() * choices.length ) ];
+  // Avoid overlapping another ghost: prefer moves that don't land on a cell
+  // another ghost currently occupies, as long as such a move exists.
+  const free = choices.filter( ( dir ) => {
+    const d = DIRS[ dir ];
+    const nx = g.x + d.x;
+    const ny = g.y + d.y;
+    return !game.ghosts.some(
+      ( o ) =>
+        o !== g &&
+        Math.round( o.x ) === Math.round( nx ) &&
+        Math.round( o.y ) === Math.round( ny )
+    );
+  } );
+  const moves = free.length ? free : choices;
+
+  // While inside the pen, head for the point just above the door so the ghost
+  // gets out into the maze; the kind-specific AI only applies once outside.
+  // Without this, Manhattan chase keeps ghosts oscillating inside the pen,
+  // because "down" is always a cell closer to Pac-Man than "up" is.
+  if ( ghostInPen( g ) ) {
+    g.dir = nearestChoice( g, moves, 13.5, 11 );
+    return;
   }
+
+  const px = Math.round( p.x );
+  const py = Math.round( p.y );
+
+  // clyde flees when close (< 2 cells), otherwise wanders toward Pac-Man.
+  if ( g.kind === 'clyde' ) {
+    if ( Math.abs( g.x - px ) + Math.abs( g.y - py ) < 2 ) {
+      g.dir = farthestChoice( g, moves, px, py );
+    } else {
+      // Wander: half the time chase, half the time pick a random move.
+      if ( Math.random() < 0.5 ) g.dir = nearestChoice( g, moves, px, py );
+      else g.dir = moves[ Math.floor( Math.random() * moves.length ) ];
+    }
+    return;
+  }
+
+  const t = ghostTarget( game, g );
+  g.dir = nearestChoice( g, moves, t.x, t.y );
 }
 
 function moveGhost( game, g ) {

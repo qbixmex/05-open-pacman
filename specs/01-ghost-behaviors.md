@@ -47,12 +47,12 @@ const KIND_CLYDE = 'clyde';     // Roam when far, flee when close – evasive be
 
 ## Acceptance criteria
 
-- [ ] All 4 ghosts spawn in the pen area at distinct coordinates
-- [ ] Each ghost has a unique AI behavior (see kinds above)
-- [ ] Ghosts follow Pac-Man from different paths (not identical)
-- [ ] Collision detection works (lives decrease when ghost catches Pac-Man)
-- [ ] Game remains playable (no infinite loops, proper wrapping)
-- [ ] Colors distinguish each ghost visually
+- [x] Step One: All 4 ghosts spawn in the pen area at distinct coordinates
+- [x] Step Two: Each ghost has a unique AI behavior (see kinds above)
+- [x] Step Three: Ghosts follow Pac-Man from different paths (not identical)
+- [x] Step Four: Collision detection works (lives decrease when ghost catches Pac-Man)
+- [x] Step Five: Game remains playable (no infinite loops, proper wrapping)
+- [x] Step Six: Colors distinguish each ghost visually
 
 ## Decisions taken and discarded
 
@@ -63,6 +63,7 @@ const KIND_CLYDE = 'clyde';     // Roam when far, flee when close – evasive be
 | Dual-target for inkey (Pac-Man + Blinky) | Provides meaningful variation without adding complexity |
 | Evasive flee for clyde | Creates dynamic tension – ghosts aren't predictable |
 | Color-coded ghosts | Improves readability in the arcade UI |
+| Pen-exit routine (while inside the pen, aim at the point above the door) | Pure Manhattan chase keeps ghosts oscillating inside the pen; routing them out lets all 4 reach the maze |
 
 ## Identified risks
 

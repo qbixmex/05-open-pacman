@@ -11,6 +11,12 @@ We are going to create a Pac-Man game similar to the original, but with a more m
 - HTML
 - CSS
 
-# Spec-Driven Development
+## Spec-Driven Development
 
 This project serves as a way to learn this development approach.
+
+## Game Screen
+
+<div align="center">
+  <img src="src/assets/images/game-screen.png" alt="PacMan game screen" />
+</div>

@@ -167,6 +167,16 @@ function farthestChoice( g, choices, px, py ) {
   return best;
 }
 
+// Is the ghost still inside the pen (interior cells or the door row)?
+// The test must exclude the tunnel row (row 14) segments outside the pen,
+// so it checks a box (rows 12-15, cols 11-16) rather than just the y value.
+function ghostInPen( g ) {
+  const x = Math.round( g.x );
+  const y = Math.round( g.y );
+  if ( y === 12 ) return x === 13 || x === 14; // door cells
+  return y >= 13 && y <= 15 && x >= 11 && x <= 16;
+}
+
 function decideGhost( game, g ) {
   const grid = game.grid;
   const p = game.pacman;
@@ -191,6 +201,15 @@ function decideGhost( game, g ) {
     );
   } );
   const moves = free.length ? free : choices;
+
+  // While inside the pen, head for the point just above the door so the ghost
+  // gets out into the maze; the kind-specific AI only applies once outside.
+  // Without this, Manhattan chase keeps ghosts oscillating inside the pen,
+  // because "down" is always a cell closer to Pac-Man than "up" is.
+  if ( ghostInPen( g ) ) {
+    g.dir = nearestChoice( g, moves, 13.5, 11 );
+    return;
+  }
 
   const px = Math.round( p.x );
   const py = Math.round( p.y );

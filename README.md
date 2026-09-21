@@ -1,6 +1,6 @@
 <div align="center">
   <h1>Open PacMan Game</h1>
-  <img src="src/assets/images/pacman.webp" width="200" />
+  <img src="src/assets/images/pacman.webp" width="200" alt="PacMan icon" />
 </div>
 
 We are going to create a Pac-Man game similar to the original, but with a more modern and simple graphical interface.
